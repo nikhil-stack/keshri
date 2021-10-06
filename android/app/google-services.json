@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "33081876161",
+    "project_id": "keshri-d405a",
+    "storage_bucket": "keshri-d405a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:33081876161:android:2b6796600020ba51d03e40",
+        "android_client_info": {
+          "package_name": "com.example.keshri"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "33081876161-8ap4cbq4l43hj9nlfsj151bsqcl3eqic.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPJ_I9ZcxAqWBiYTkpq-FDEfUecSGhIsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "33081876161-8ap4cbq4l43hj9nlfsj151bsqcl3eqic.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
