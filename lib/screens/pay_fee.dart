@@ -16,6 +16,7 @@ class _PayFeeState extends State<PayFee> {
   Widget build(BuildContext context) {
     final data = Provider.of<ManageData>(
       context,
+      listen: false,
     );
     data.getStudents();
     return Scaffold(
