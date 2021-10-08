@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:keshri/models/courses_fee.dart';
 import 'package:keshri/models/student.dart';
 import 'package:keshri/providers/manageData.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +31,7 @@ class _StudentDetailsState extends State<StudentDetails> {
   Widget build(BuildContext context) {
     final data = Provider.of<ManageData>(context);
     int feeDifference =
-        (CoursesFee[widget.studentCourse] - widget.studentFeesPaid);
+        (data.coursesFee[widget.studentCourse] - widget.studentFeesPaid);
     int feesPaid = widget.studentFeesPaid;
 
     return Column(
@@ -91,7 +90,7 @@ class _StudentDetailsState extends State<StudentDetails> {
                 setState(() {
                   feesPaid =
                       widget.studentFeesPaid + int.tryParse(controller2.text);
-                  feeDifference = (CoursesFee[widget.studentCourse] - feesPaid);
+                  feeDifference = (data.coursesFee[widget.studentCourse] - feesPaid);
                   controller2.clear();
                 });
 

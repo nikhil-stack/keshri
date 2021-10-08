@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:keshri/models/student.dart';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ManageData with ChangeNotifier {
   List<Student> _students = [];
@@ -10,6 +8,11 @@ class ManageData with ChangeNotifier {
   List<int> _studentRollNo = [];
   Student _currentStudent =
       Student(name: '', rollNo: 0, section: '', course: '');
+  Map<String, int> _coursesFee = {};
+
+  Map<String, int> get coursesFee {
+    return {..._coursesFee};
+  }
 
   List<Student> get students {
     return [..._students];
@@ -27,25 +30,34 @@ class ManageData with ChangeNotifier {
     return _currentStudent;
   }
 
+  Future<void> updateCoursesFee() async {
+    var querySnapshot =
+        await Firestore.instance.collection('fees').getDocuments();
+    var documents = querySnapshot.documents;
+    documents.forEach((element) {
+      _coursesFee.putIfAbsent(element['course'], () => element['fees']);
+    });
+    //print(_coursesFee);
+    notifyListeners();
+  }
+
   Future<void> fetchAndSetProducts() async {
-    final url = Uri.parse(
-        'https://keshri-d405a-default-rtdb.firebaseio.com/students.json');
     try {
-      final response = await http.get(url);
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
-      final List<Student> loadedStudents = [];
-      extractedData.forEach((key, value) {
-        loadedStudents.add(
-          Student(
-              name: value['Name'],
-              rollNo: value['RollNo'],
-              section: value['Section'],
-              course: value['Course'],
-              id: key,
-              feesPaid: 0),
-        );
+      List<Student> loadedStudents = [];
+
+      var querySnapshot =
+          await Firestore.instance.collection('students').getDocuments();
+      var documents = querySnapshot.documents;
+      documents.forEach((element) {
+        loadedStudents.add(Student(
+            name: element['name'],
+            rollNo: element['rollNo'],
+            section: element['section'],
+            course: element['course'],
+            feesPaid: 0));
       });
       _students = loadedStudents;
+      print(_students);
       notifyListeners();
     } catch (e) {
       throw (e);
@@ -53,40 +65,19 @@ class ManageData with ChangeNotifier {
   }
 
   Future<void> addStudent(Student student) async {
-    final url = Uri.parse(
-        'https://keshri-d405a-default-rtdb.firebaseio.com/students.json');
     try {
-      //SharedPreferences prefs = await SharedPreferences.getInstance();
-      //int currentRollNo = (prefs.getInt('rollNo') ?? 0) + 1;
-      //_rollNo = currentRollNo;
       _rollNo = _students.length + 1;
-      final response = await http.post(
-        url,
-        body: json.encode(
-          {
-            'RollNo': _rollNo,
-            'Name': student.name,
-            'Course': student.course,
-            'Section': student.section,
-            'FeesPaid': 0,
-          },
-        ),
-      );
-      final responseData = json.decode(response.body);
-      print(json.decode(response.body));
-      /*_students.add(
-        Student(
-          name: student.name,
-          section: student.section,
-          course: student.course,
-          rollNo: student.rollNo,
-          id: responseData['name'],
-          feesPaid: 0,
-        ),
-      );*/
-      //await prefs.setInt('rollNo', _students.length);
 
-      print(responseData['name']);
+      Firestore.instance
+          .collection('students')
+          .document(_rollNo.toString())
+          .setData({
+        'name': student.name,
+        'rollNo': _rollNo,
+        'section': student.section,
+        'course': student.course,
+        'feesPaid': 0,
+      });
     } catch (e) {
       print(e);
     }
@@ -94,60 +85,43 @@ class ManageData with ChangeNotifier {
   }
 
   Future<void> getStudents() async {
-    final url = Uri.parse(
-        'https://keshri-d405a-default-rtdb.firebaseio.com/students.json');
-    final response = await http.get(url);
-    final extractedData = json.decode(response.body) as Map<String, dynamic>;
-    final List<int> loadedRollNo = [];
-    extractedData.forEach((key, value) {
-      loadedRollNo.add(value['RollNo']);
-    });
+    List<int> loadedRollNo = [];
+    var querySnapshot =
+        await Firestore.instance.collection('students').getDocuments();
+    var documents = querySnapshot.documents;
+    documents.forEach(
+      (element) {
+        loadedRollNo.add(element['rollNo']);
+      },
+    );
     _studentRollNo = loadedRollNo;
+
     notifyListeners();
   }
 
   Future<void> getStudentDetails(int rollNo) async {
-    final url = Uri.parse(
-        'https://keshri-d405a-default-rtdb.firebaseio.com/students.json');
-    final response = await http.get(url);
-    final responseData =
-        await json.decode(response.body) as Map<String, dynamic>;
-    //print(responseData);
-    responseData.forEach((key, value) {
-      if (value['RollNo'] == rollNo) {
-        /*currentStudent.name = value['Name'];
-        currentStudent.course = value['Course'];
-        currentStudent.rollNo = value['RollNo'];
-        currentStudent.section = value['Section'];*/
-        //print(value['Name']);
+    var responseDataa =
+        await Firestore.instance.collection('students').getDocuments();
+    var documents = responseDataa.documents;
+    documents.forEach((value) {
+      if (value['rollNo'] == rollNo) {
         _currentStudent = Student(
-            name: value['Name'],
-            rollNo: rollNo,
-            section: value['Section'],
-            course: value['Course'],
-            feesPaid: value['FeesPaid'],
-            id: key);
+          name: value['name'],
+          rollNo: rollNo,
+          section: value['section'],
+          course: value['course'],
+          feesPaid: value['feesPaid'],
+        );
       }
     });
-
     notifyListeners();
   }
 
   Future<void> payFees(Student newStudent, String id) async {
-    final url = Uri.parse(
-        'https://keshri-d405a-default-rtdb.firebaseio.com/students/$id.json');
-    await http.patch(
-      url,
-      body: json.encode(
-        {
-          'Name': newStudent.name,
-          'RollNo': newStudent.rollNo,
-          'Course': newStudent.course,
-          'Section': newStudent.section,
-          'FeesPaid': newStudent.feesPaid,
-        },
-      ),
-    );
+    var collection = Firestore.instance.collection('students');
+    collection.document(newStudent.rollNo.toString()).updateData({
+      'feesPaid': newStudent.feesPaid,
+    });
     notifyListeners();
   }
 }

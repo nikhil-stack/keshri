@@ -15,7 +15,7 @@ class _AddStudentState extends State<AddStudent> {
   var sectionController = TextEditingController();
   var nameController = TextEditingController();
   Key key = GlobalKey<FormState>();
-  bool _isInit = true;
+  var _isInit = true;
 
   @override
   void didChangeDependencies() {
@@ -86,9 +86,9 @@ class _AddStudentState extends State<AddStudent> {
                         ),
                         DropdownButton(
                           items: <String>[
-                            'B.Tech',
+                            'B.Tech.',
                             'M.Tech.',
-                            'B.Sc',
+                            'B.Sc.',
                             'M.Sc.',
                             'BCA'
                           ]
